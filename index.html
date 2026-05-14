@@ -28,7 +28,24 @@
 </head>
 <body>
 
-<div id="info">
+<body>
+
+<input
+  type="file"
+  id="textureUpload"
+  accept="image/png, image/jpeg"
+  style="
+    position:absolute;
+    top:10px;
+    left:10px;
+    z-index:10;
+    background:white;
+    padding:10px;
+    border-radius:10px;
+  "
+/>
+
+<div id="info" style="top:70px;">
   Drag mouse to rotate camera
 </div>
 
@@ -113,13 +130,63 @@ scene.add(ground);
 
 const loader = new GLTFLoader();
 
-loader.load('car.glb', (gltf) => {
+let carModel;
 
-  const car = gltf.scene;
+loader.load(
 
-  car.scale.set(1,1,1);
+  'car.glb',
 
-  scene.add(car);
+  (gltf) => {
+
+    console.log("MODEL LOADED");
+
+    carModel = gltf.scene;
+
+    carModel.scale.set(1,1,1);
+
+    scene.add(carModel);
+
+  },
+
+  undefined,
+
+  (error) => {
+
+    console.error(error);
+
+  }
+
+);
+
+const uploadInput = document.getElementById('textureUpload');
+
+const textureLoader = new THREE.TextureLoader();
+
+uploadInput.addEventListener('change', (event) => {
+
+  const file = event.target.files[0];
+
+  if (!file || !carModel) return;
+
+  const imageURL = URL.createObjectURL(file);
+
+  textureLoader.load(imageURL, (texture) => {
+
+    texture.flipY = false;
+
+    carModel.traverse((child) => {
+
+      if (child.isMesh) {
+
+        child.material.map = texture;
+
+        child.material.needsUpdate = true;
+
+      }
+
+    });
+
+  });
 
 });
 
